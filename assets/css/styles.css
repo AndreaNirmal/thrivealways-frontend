@@ -633,3 +633,35 @@ em, .italic { font-family: var(--font-display); font-style: italic; }
 
 .contexts > .eyebrow { display: flex; }
 #about-thrive { padding-bottom: clamp(48px, 6vw, 80px); }
+
+/* ---------- Review markers for details still to fill in ----------
+   Wrap any placeholder in <mark class="todo">…</mark>. Remove the tags once filled. */
+mark.todo {
+  color: inherit;
+  background: color-mix(in srgb, var(--kids) 20%, transparent);
+  border-bottom: 1.5px dashed var(--kids);
+  border-radius: 5px;
+  padding: .05em .3em;
+  -webkit-box-decoration-break: clone; box-decoration-break: clone;
+  transition: outline-color .3s, background-color .3s;
+  outline: 2px solid transparent; outline-offset: 3px;
+}
+mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb, var(--kids) 32%, transparent); }
+.todo-bar {
+  position: fixed; right: 16px; bottom: 16px; z-index: 70;
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 6px 6px 16px; border-radius: 999px;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--kids) 60%, var(--line));
+  box-shadow: var(--shadow-lg);
+  font-size: .87rem; font-weight: 500;
+  animation: fadeSwap .5s var(--ease) both;
+}
+.todo-bar__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--kids); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kids) 25%, transparent); margin-right: 6px; }
+.todo-bar button {
+  border: 0; cursor: pointer; border-radius: 999px; font: 600 .84rem/1 var(--font-body);
+  padding: 9px 14px; background: var(--kids); color: var(--bg);
+}
+.todo-bar button.todo-bar__close { background: transparent; color: var(--muted); padding: 9px 10px; }
+.todo-bar button.todo-bar__close:hover { color: var(--ink); }
+@media print { mark.todo { background: none; border: 0; } .todo-bar { display: none; } }

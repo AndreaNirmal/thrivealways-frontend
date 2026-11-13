@@ -216,6 +216,35 @@
     });
   }
 
+  /* ---------- Review bar: jump between details still to fill in ---------- */
+  var todos = document.querySelectorAll("mark.todo");
+  if (todos.length) {
+    var bar = document.createElement("div");
+    bar.className = "todo-bar";
+    bar.setAttribute("role", "region");
+    bar.setAttribute("aria-label", "Details to fill in");
+    bar.innerHTML = '<span class="todo-bar__dot" aria-hidden="true"></span><span class="todo-bar__label"></span>' +
+      '<button type="button" class="todo-bar__next">Next &rarr;</button>' +
+      '<button type="button" class="todo-bar__close" aria-label="Hide review bar">&times;</button>';
+    var label = bar.querySelector(".todo-bar__label");
+    var idx = -1;
+    label.textContent = todos.length + (todos.length === 1 ? " detail" : " details") + " to fill in";
+    bar.querySelector(".todo-bar__next").addEventListener("click", function () {
+      if (idx >= 0) todos[idx].classList.remove("is-current");
+      idx = (idx + 1) % todos.length;
+      var m = todos[idx];
+      var r = m.closest(".reveal"); if (r) r.classList.add("is-visible");
+      m.classList.add("is-current");
+      m.scrollIntoView({ behavior: "smooth", block: "center" });
+      label.textContent = (idx + 1) + " of " + todos.length + " to fill in";
+    });
+    bar.querySelector(".todo-bar__close").addEventListener("click", function () {
+      todos.forEach(function (m) { m.classList.remove("is-current"); });
+      bar.remove();
+    });
+    document.body.appendChild(bar);
+  }
+
   /* ---------- Footer year ---------- */
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
 })();
