@@ -665,6 +665,9 @@ mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb
 .todo-bar.is-open .todo-bar__toggle svg { transform: rotate(180deg); }
 .todo-bar__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--kids); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kids) 25%, transparent); flex-shrink: 0; }
 .todo-bar .todo-bar__next { background: var(--kids); color: var(--bg); white-space: nowrap; }
+.todo-bar .todo-bar__prev { background: color-mix(in srgb, var(--kids) 18%, transparent); color: var(--ink); white-space: nowrap; }
+.todo-bar .todo-bar__prev:hover { background: color-mix(in srgb, var(--kids) 30%, transparent); }
+@media (max-width: 520px) { .todo-bar__label { max-width: 34vw; } }
 .todo-bar .todo-bar__close { background: transparent; color: var(--muted); padding: 9px 10px; }
 .todo-bar .todo-bar__close:hover { color: var(--ink); }
 .todo-panel {

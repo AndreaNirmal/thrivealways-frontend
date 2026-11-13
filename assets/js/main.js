@@ -278,12 +278,16 @@
       toggle.setAttribute("aria-controls", "todo-panel");
       toggle.innerHTML = '<span class="todo-bar__dot" aria-hidden="true"></span><span class="todo-bar__label"></span>' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+      var prev = el("button", "todo-bar__prev", "← Prev");
+      prev.type = "button";
+      prev.setAttribute("aria-label", "Previous detail");
       var next = el("button", "todo-bar__next", "Next →");
       next.type = "button";
+      next.setAttribute("aria-label", "Next detail");
       var close = el("button", "todo-bar__close", "×");
       close.type = "button";
       close.setAttribute("aria-label", "Hide review bar");
-      bar.appendChild(toggle); bar.appendChild(next); bar.appendChild(close);
+      bar.appendChild(toggle); bar.appendChild(prev); bar.appendChild(next); bar.appendChild(close);
       var label = toggle.querySelector(".todo-bar__label");
       label.textContent = items.length + (items.length === 1 ? " detail" : " details") + " to fill in" +
         (groups.length > 1 ? " · " + groups.length + " pages" : "");
@@ -348,6 +352,13 @@
         if (pointer >= 0) { go((pointer + 1) % items.length); return; }
         for (var k = 0; k < items.length; k++) { if (items[k].file === here) { go(k); return; } }
         go(0);
+      });
+      prev.addEventListener("click", function () {
+        var n = items.length;
+        if (pointer >= 0) { go((pointer - 1 + n) % n); return; }
+        // start from the last item on this page, else the last item overall
+        for (var k = n - 1; k >= 0; k--) { if (items[k].file === here) { go(k); return; } }
+        go(n - 1);
       });
       close.addEventListener("click", function () {
         localMarks.forEach(function (m) { m.classList.remove("is-current"); });
