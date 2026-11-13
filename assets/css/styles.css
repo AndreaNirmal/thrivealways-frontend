@@ -84,6 +84,7 @@ body.theme-org  { --accent: var(--org);  --accent-soft: var(--org-soft); }
 
 /* ---------- Base ---------- */
 *, *::before, *::after { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
@@ -266,7 +267,7 @@ em, .italic { font-family: var(--font-display); font-style: italic; }
   display: inline-flex; padding: 5px; gap: 4px;
   background: var(--surface); border: 1px solid var(--line); border-radius: 999px;
   box-shadow: var(--shadow);
-  max-width: 100%; overflow-x: auto;
+  max-width: 100%;
 }
 .segmented button {
   border: 0; background: transparent; color: var(--muted);
@@ -696,7 +697,9 @@ mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb
 /* ---------- Phone refinements ---------- */
 @media (max-width: 520px) {
   .segmented { display: flex; width: 100%; }
-  .segmented button { flex: 1 1 auto; padding: 11px 10px; font-size: .84rem; }
+  .segmented button { flex: 1 1 auto; min-width: 0; padding: 11px 8px; font-size: .88rem; white-space: normal; line-height: 1.2; }
+  .segmented button::first-letter { text-transform: uppercase; }
+  .seg-pre { display: none; }
   .hero__art { max-width: 220px; }
   .hero { padding-top: 32px; }
 }
@@ -710,3 +713,5 @@ mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb
 .form__done p { color: var(--muted); margin-bottom: 1.6rem; }
 .form button[disabled] { opacity: .65; cursor: progress; }
 .form__status a { color: inherit; font-weight: 600; }
+
+.form.is-sent > :not(.form__done) { display: none !important; }

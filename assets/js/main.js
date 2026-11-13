@@ -205,10 +205,25 @@
     var submitHTML = submitBtn.innerHTML;
     var fields = Array.prototype.filter.call(form.children, function (c) { return c !== done && c !== status; });
 
+    // Topic selected when the page loaded (from ?about=… or the default), restored on reset
+    var initialTopic = form.querySelector('input[name="about"]:checked');
+    var RESET_AFTER_MS = 60000; // thank-you message shows for 1 minute, then the form returns
+    var resetTimer = null;
+
     function showDone(on) {
+      clearTimeout(resetTimer);
       fields.forEach(function (c) { c.hidden = on; });
+      form.classList.toggle("is-sent", on);
       done.hidden = !on;
-      if (on) done.focus();
+      if (on) {
+        done.focus({ preventScroll: true });
+        resetTimer = setTimeout(function () { showDone(false); }, RESET_AFTER_MS);
+      } else {
+        form.reset();
+        form.querySelectorAll("[data-entry]").forEach(function (f) { f.value = ""; });
+        if (initialTopic) initialTopic.checked = true;
+        status.textContent = "";
+      }
     }
 
     form.addEventListener("submit", function (e) {
@@ -227,7 +242,7 @@
       fetch(form.getAttribute("data-gform"), { method: "POST", mode: "no-cors", body: body })
         .then(function () {
           form.reset();
-          if (topicEl) topicEl.checked = true;
+          form.querySelectorAll("[data-entry]").forEach(function (f) { f.value = ""; });
           showDone(true);
         })
         .catch(function () {
