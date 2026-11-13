@@ -692,3 +692,21 @@ mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb
 .todo-panel li a:hover { color: var(--kids); text-decoration: underline; }
 .todo-panel__note { font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; margin: 6px 0 10px; }
 @media print { mark.todo { background: none; border: 0; } .todo-bar, .todo-panel { display: none; } }
+
+/* ---------- Phone refinements ---------- */
+@media (max-width: 520px) {
+  .segmented { display: flex; width: 100%; }
+  .segmented button { flex: 1 1 auto; padding: 11px 10px; font-size: .84rem; }
+  .hero__art { max-width: 220px; }
+  .hero { padding-top: 32px; }
+}
+
+/* ---------- Contact form: sent state ---------- */
+.form__done { text-align: center; padding: 28px 8px 18px; outline: none; }
+.form__done[hidden] { display: none; }
+.form__done-icon { width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); animation: grow .6s var(--ease) both; transform: scale(0); }
+.form__done-icon svg { width: 30px; height: 30px; }
+.form__done h3 { font-size: 1.6rem; }
+.form__done p { color: var(--muted); margin-bottom: 1.6rem; }
+.form button[disabled] { opacity: .65; cursor: progress; }
+.form__status a { color: inherit; font-weight: 600; }

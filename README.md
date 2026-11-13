@@ -31,13 +31,13 @@ Repository **Settings → Pages → Build and deployment → Deploy from a branc
 ## Things to fill in
 
 - **About page** (`about.html`): replace every `[placeholder]`. To add a photo, save it as `assets/img/founder.jpg` and follow the comment at the top of `<main>`.
-- **Contact details** (`index.html`, `#contact`): email, phone and location, plus the `data-email` attribute on the form (where enquiries are sent).
+- **Contact details** (`index.html`, `#contact`): email, phone and location, plus the fallback `data-email` attribute on the form.
 
 ## Contact form
 
-The form needs no server: on submit it opens the visitor's email app with the message pre-filled and addressed to `data-email`. Service pages link to `index.html?about=life#contact` (or `kids` / `organisations`) so the right topic is preselected.
+Enquiries are sent to a Google Form ("People who have gotten in touch through THRIVE Always"); view them in the form's **Responses** tab or its linked Google Sheet. The form's `formResponse` URL is in `data-gform` on the `<form>` in `index.html`, and each field's Google entry ID is in its `data-entry` attribute (the topic uses `data-entry-about`). If you add or rename questions in the Google Form, get a fresh pre-filled link and update those IDs.
 
-To receive submissions without relying on the visitor's email app, point the form at a form service such as Formspree and remove the `data-contact-form` attribute.
+Service pages link to `index.html?about=life#contact` (or `kids` / `organisations`) so the right topic is preselected. `data-email` is only shown as a fallback if sending fails.
 
 ## Theme
 

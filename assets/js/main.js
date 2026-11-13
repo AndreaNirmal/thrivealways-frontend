@@ -187,7 +187,10 @@
     });
   });
 
-  /* ---------- Contact form (mailto, no backend needed) ---------- */
+  /* ---------- Contact form -> Google Form ----------
+     Posts each field to the Google Form named in data-gform, using the entry IDs
+     in data-entry. Google doesn't let the page read its reply (no-cors), so a
+     completed request is treated as sent; a network failure shows a fallback. */
   var form = document.querySelector("[data-contact-form]");
   if (form) {
     var params = new URLSearchParams(window.location.search);
@@ -196,23 +199,54 @@
       var pre = form.querySelector('input[name="about"][value="' + about.replace(/[^a-z]/g, "") + '"]');
       if (pre) pre.checked = true;
     }
+    var status = form.querySelector(".form__status");
+    var done = form.querySelector(".form__done");
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var submitHTML = submitBtn.innerHTML;
+    var fields = Array.prototype.filter.call(form.children, function (c) { return c !== done && c !== status; });
+
+    function showDone(on) {
+      fields.forEach(function (c) { c.hidden = on; });
+      done.hidden = !on;
+      if (on) done.focus();
+    }
+
     form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var status = form.querySelector(".form__status");
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      var fd = new FormData(form);
+      var body = new URLSearchParams();
+      form.querySelectorAll("[data-entry]").forEach(function (f) {
+        if (f.value.trim()) body.append(f.getAttribute("data-entry"), f.value.trim());
+      });
       var topicEl = form.querySelector('input[name="about"]:checked');
-      var topic = topicEl ? topicEl.getAttribute("data-label") : "General enquiry";
-      var subject = "Enquiry: " + topic + " (from " + fd.get("name") + ")";
-      var body =
-        "Name: " + fd.get("name") + "\n" +
-        "Email: " + fd.get("email") + "\n" +
-        (fd.get("phone") ? "Phone: " + fd.get("phone") + "\n" : "") +
-        "About: " + topic + "\n\n" +
-        fd.get("message");
-      var to = form.getAttribute("data-email");
-      window.location.href = "mailto:" + to + "?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      if (status) status.textContent = "Thank you. Your email app should open with your message ready to send.";
+      if (topicEl) body.append(form.getAttribute("data-entry-about"), topicEl.getAttribute("data-label"));
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Sending…";
+      status.textContent = "";
+      fetch(form.getAttribute("data-gform"), { method: "POST", mode: "no-cors", body: body })
+        .then(function () {
+          form.reset();
+          if (topicEl) topicEl.checked = true;
+          showDone(true);
+        })
+        .catch(function () {
+          var mail = form.getAttribute("data-email");
+          status.innerHTML = "";
+          status.appendChild(document.createTextNode("Sorry, your message couldn't be sent. Please check your connection and try again, or email us at "));
+          var a = document.createElement("a");
+          a.href = "mailto:" + mail; a.textContent = mail;
+          status.appendChild(a);
+          status.appendChild(document.createTextNode("."));
+        })
+        .then(function () {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = submitHTML;
+        });
+    });
+    form.querySelector("[data-form-reset]").addEventListener("click", function () {
+      showDone(false);
+      form.querySelector("#f-name").focus();
     });
   }
 
