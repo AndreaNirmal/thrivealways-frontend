@@ -715,3 +715,24 @@ mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb
 .form__status a { color: inherit; font-weight: 600; }
 
 .form.is-sent > :not(.form__done) { display: none !important; }
+
+/* ---------- Portrait: left-aligned photo with rounded corners that fades out to the right ----------
+   Remove the "portrait--fade" class in about.html to go back to the arched frame. */
+/* Where the fade begins (as % of the photo's width / height).
+   Light mode fades later so the pale photo doesn't wash into the cream page. */
+.portrait--fade { --fade-x: 68%; --fade-y: 88%; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .portrait--fade { --fade-x: 40%; --fade-y: 72%; } }
+:root[data-theme="dark"] .portrait--fade { --fade-x: 40%; --fade-y: 72%; }
+.portrait--fade {
+  background: none; box-shadow: none; border-radius: 0; overflow: visible;
+  place-items: start;
+}
+.portrait--fade img {
+  object-position: left center;
+  border-radius: 28px;
+  -webkit-mask-image: linear-gradient(to right, #000 var(--fade-x), transparent 100%), linear-gradient(to bottom, #000 var(--fade-y), transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, #000 var(--fade-x), transparent 100%), linear-gradient(to bottom, #000 var(--fade-y), transparent 100%);
+  mask-composite: intersect;
+}
+.portrait--fade .portrait__badge { right: auto; left: 16px; bottom: 7%; max-width: 80%; }
