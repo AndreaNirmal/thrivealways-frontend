@@ -649,19 +649,43 @@ mark.todo {
 mark.todo.is-current { outline-color: var(--kids); background: color-mix(in srgb, var(--kids) 32%, transparent); }
 .todo-bar {
   position: fixed; right: 16px; bottom: 16px; z-index: 70;
-  display: flex; align-items: center; gap: 6px;
-  padding: 6px 6px 6px 16px; border-radius: 999px;
+  display: flex; align-items: center; gap: 4px;
+  padding: 5px; border-radius: 999px;
   background: var(--surface); color: var(--ink);
   border: 1px solid color-mix(in srgb, var(--kids) 60%, var(--line));
   box-shadow: var(--shadow-lg);
-  font-size: .87rem; font-weight: 500;
+  max-width: calc(100vw - 32px);
   animation: fadeSwap .5s var(--ease) both;
 }
-.todo-bar__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--kids); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kids) 25%, transparent); margin-right: 6px; }
-.todo-bar button {
-  border: 0; cursor: pointer; border-radius: 999px; font: 600 .84rem/1 var(--font-body);
-  padding: 9px 14px; background: var(--kids); color: var(--bg);
+.todo-bar button { border: 0; cursor: pointer; border-radius: 999px; font: 600 .84rem/1 var(--font-body); padding: 9px 14px; }
+.todo-bar__toggle { display: inline-flex; align-items: center; gap: 8px; background: transparent; color: var(--ink); min-width: 0; }
+.todo-bar__toggle:hover { background: var(--bg-alt); }
+.todo-bar__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.todo-bar__toggle svg { width: 15px; height: 15px; color: var(--muted); transition: transform .3s var(--ease); flex-shrink: 0; }
+.todo-bar.is-open .todo-bar__toggle svg { transform: rotate(180deg); }
+.todo-bar__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--kids); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kids) 25%, transparent); flex-shrink: 0; }
+.todo-bar .todo-bar__next { background: var(--kids); color: var(--bg); white-space: nowrap; }
+.todo-bar .todo-bar__close { background: transparent; color: var(--muted); padding: 9px 10px; }
+.todo-bar .todo-bar__close:hover { color: var(--ink); }
+.todo-panel {
+  position: fixed; right: 16px; bottom: 72px; z-index: 70;
+  width: min(360px, calc(100vw - 32px)); max-height: min(60vh, 520px); overflow-y: auto;
+  background: var(--surface); color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--kids) 60%, var(--line));
+  border-radius: 18px; box-shadow: var(--shadow-lg);
+  padding: 18px 18px 8px;
+  animation: fadeSwap .35s var(--ease) both;
 }
-.todo-bar button.todo-bar__close { background: transparent; color: var(--muted); padding: 9px 10px; }
-.todo-bar button.todo-bar__close:hover { color: var(--ink); }
-@media print { mark.todo { background: none; border: 0; } .todo-bar { display: none; } }
+.todo-panel[hidden] { display: none; }
+.todo-panel__title { font: 600 .74rem/1 var(--font-body); letter-spacing: .14em; text-transform: uppercase; color: var(--kids); margin: 0 0 14px; }
+.todo-panel__group { margin-bottom: 14px; }
+.todo-panel__page { display: flex; justify-content: space-between; align-items: center; margin: 0 0 6px; font-family: var(--font-display); font-size: 1.05rem; }
+.todo-panel__page a { text-decoration: none; }
+.todo-panel__page a:hover { color: var(--kids); }
+.todo-panel__page span { font: 600 .75rem/1 var(--font-body); background: color-mix(in srgb, var(--kids) 20%, transparent); padding: 4px 9px; border-radius: 999px; }
+.todo-panel ol { margin: 0; padding: 0 0 0 1.4em; font-size: .86rem; color: var(--muted); }
+.todo-panel li { padding: 3px 0; }
+.todo-panel li a { text-decoration: none; color: var(--ink-soft); }
+.todo-panel li a:hover { color: var(--kids); text-decoration: underline; }
+.todo-panel__note { font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); padding-top: 10px; margin: 6px 0 10px; }
+@media print { mark.todo { background: none; border: 0; } .todo-bar, .todo-panel { display: none; } }

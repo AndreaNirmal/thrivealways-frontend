@@ -216,34 +216,164 @@
     });
   }
 
-  /* ---------- Review bar: jump between details still to fill in ---------- */
-  var todos = document.querySelectorAll("mark.todo");
-  if (todos.length) {
-    var bar = document.createElement("div");
-    bar.className = "todo-bar";
-    bar.setAttribute("role", "region");
-    bar.setAttribute("aria-label", "Details to fill in");
-    bar.innerHTML = '<span class="todo-bar__dot" aria-hidden="true"></span><span class="todo-bar__label"></span>' +
-      '<button type="button" class="todo-bar__next">Next &rarr;</button>' +
-      '<button type="button" class="todo-bar__close" aria-label="Hide review bar">&times;</button>';
-    var label = bar.querySelector(".todo-bar__label");
-    var idx = -1;
-    label.textContent = todos.length + (todos.length === 1 ? " detail" : " details") + " to fill in";
-    bar.querySelector(".todo-bar__next").addEventListener("click", function () {
-      if (idx >= 0) todos[idx].classList.remove("is-current");
-      idx = (idx + 1) % todos.length;
-      var m = todos[idx];
-      var r = m.closest(".reveal"); if (r) r.classList.add("is-visible");
-      m.classList.add("is-current");
-      m.scrollIntoView({ behavior: "smooth", block: "center" });
-      label.textContent = (idx + 1) + " of " + todos.length + " to fill in";
+  /* ---------- Review bar: details still to fill in, across all pages ----------
+     Any <mark class="todo"> on any page listed in PAGES is counted. Other pages are
+     read with fetch(), which works on GitHub Pages or a local server. When a page is
+     opened straight from disk (file://) browsers block that, so only the current
+     page is counted. */
+  (function () {
+    var PAGES = [
+      ["index.html", "Home"],
+      ["life.html", "THRIVE Life"],
+      ["kids.html", "THRIVE Kids"],
+      ["organisations.html", "THRIVE Organisations"],
+      ["about.html", "About"]
+    ];
+    var here = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    var localMarks = document.querySelectorAll("mark.todo");
+    localMarks.forEach(function (m, i) { m.id = "todo-" + i; });
+
+    function snippet(el) {
+      var t = el.textContent.replace(/\s+/g, " ").replace(/[\[\]]/g, "").trim();
+      return t.length > 72 ? t.slice(0, 70) + "…" : t;
+    }
+    function readPage(file) {
+      if (file === here) return Promise.resolve(Array.prototype.map.call(localMarks, snippet));
+      return fetch(file, { cache: "no-store" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, "text/html");
+          return Array.prototype.map.call(doc.querySelectorAll("mark.todo"), snippet);
+        })
+        .catch(function () { return null; });
+    }
+    function el(tag, cls, text) {
+      var e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text != null) e.textContent = text;
+      return e;
+    }
+
+    Promise.all(PAGES.map(function (p) { return readPage(p[0]); })).then(function (results) {
+      var items = [], groups = [], unreadable = 0;
+      results.forEach(function (texts, pi) {
+        if (texts === null) { unreadable++; return; }
+        if (!texts.length) return;
+        var g = { file: PAGES[pi][0], name: PAGES[pi][1], items: [] };
+        texts.forEach(function (t, i) {
+          var it = { file: g.file, idx: i, text: t };
+          items.push(it); g.items.push(it);
+        });
+        groups.push(g);
+      });
+      if (!items.length) return;
+
+      /* Bar */
+      var bar = el("div", "todo-bar");
+      bar.setAttribute("role", "region");
+      bar.setAttribute("aria-label", "Details to fill in");
+      var toggle = el("button", "todo-bar__toggle");
+      toggle.type = "button";
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-controls", "todo-panel");
+      toggle.innerHTML = '<span class="todo-bar__dot" aria-hidden="true"></span><span class="todo-bar__label"></span>' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>';
+      var next = el("button", "todo-bar__next", "Next →");
+      next.type = "button";
+      var close = el("button", "todo-bar__close", "×");
+      close.type = "button";
+      close.setAttribute("aria-label", "Hide review bar");
+      bar.appendChild(toggle); bar.appendChild(next); bar.appendChild(close);
+      var label = toggle.querySelector(".todo-bar__label");
+      label.textContent = items.length + (items.length === 1 ? " detail" : " details") + " to fill in" +
+        (groups.length > 1 ? " · " + groups.length + " pages" : "");
+
+      /* Panel listing every item, grouped by page */
+      var panel = el("div", "todo-panel");
+      panel.id = "todo-panel";
+      panel.hidden = true;
+      panel.appendChild(el("p", "todo-panel__title", "Details to fill in"));
+      groups.forEach(function (g) {
+        var box = el("div", "todo-panel__group");
+        var head = el("p", "todo-panel__page");
+        var pageLink = el("a", null, g.name);
+        pageLink.href = g.file;
+        head.appendChild(pageLink);
+        head.appendChild(el("span", null, String(g.items.length)));
+        box.appendChild(head);
+        var ol = el("ol");
+        g.items.forEach(function (it) {
+          var li = el("li");
+          var a = el("a", it.file === here ? "is-here" : null, it.text);
+          a.href = it.file + "#todo-" + it.idx;
+          a.setAttribute("data-file", it.file);
+          a.setAttribute("data-idx", it.idx);
+          li.appendChild(a);
+          ol.appendChild(li);
+        });
+        box.appendChild(ol);
+        panel.appendChild(box);
+      });
+      if (unreadable) {
+        panel.appendChild(el("p", "todo-panel__note",
+          "Showing this page only. Details on other pages are counted when the site is viewed on GitHub Pages or a local server."));
+      }
+
+      var pointer = -1;
+      function focusLocal(i) {
+        localMarks.forEach(function (m) { m.classList.remove("is-current"); });
+        var m = localMarks[i];
+        if (!m) return;
+        var r = m.closest(".reveal"); if (r) r.classList.add("is-visible");
+        m.classList.add("is-current");
+        m.scrollIntoView({ behavior: "smooth", block: "center" });
+        for (var k = 0; k < items.length; k++) {
+          if (items[k].file === here && items[k].idx === i) { pointer = k; break; }
+        }
+        label.textContent = (pointer + 1) + " of " + items.length + " to fill in";
+      }
+      function go(k) {
+        var it = items[k];
+        if (it.file === here) focusLocal(it.idx);
+        else location.href = it.file + "#todo-" + it.idx;
+      }
+      function setOpen(open) {
+        panel.hidden = !open;
+        toggle.setAttribute("aria-expanded", String(open));
+        bar.classList.toggle("is-open", open);
+      }
+
+      toggle.addEventListener("click", function () { setOpen(panel.hidden); });
+      next.addEventListener("click", function () {
+        if (pointer >= 0) { go((pointer + 1) % items.length); return; }
+        for (var k = 0; k < items.length; k++) { if (items[k].file === here) { go(k); return; } }
+        go(0);
+      });
+      close.addEventListener("click", function () {
+        localMarks.forEach(function (m) { m.classList.remove("is-current"); });
+        bar.remove(); panel.remove();
+      });
+      panel.addEventListener("click", function (e) {
+        var a = e.target.closest("ol a");
+        if (a && a.getAttribute("data-file") === here) {
+          e.preventDefault();
+          setOpen(false);
+          focusLocal(+a.getAttribute("data-idx"));
+        }
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !panel.hidden) { setOpen(false); toggle.focus(); }
+      });
+
+      document.body.appendChild(panel);
+      document.body.appendChild(bar);
+
+      // Arriving from another page via "Next" or the list
+      var h = /^#todo-(\d+)$/.exec(location.hash);
+      if (h) setTimeout(function () { focusLocal(+h[1]); }, 350);
+      else if (location.hash === "#todos") setOpen(true);
     });
-    bar.querySelector(".todo-bar__close").addEventListener("click", function () {
-      todos.forEach(function (m) { m.classList.remove("is-current"); });
-      bar.remove();
-    });
-    document.body.appendChild(bar);
-  }
+  })();
 
   /* ---------- Footer year ---------- */
   document.querySelectorAll("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
